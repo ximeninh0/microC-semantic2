@@ -60,10 +60,14 @@ class ReadChecker:
     def _check_expression(self, expression: Expr, state: set[Symbol]) -> None:
         if isinstance(expression, IdentifierExpr):
             symbol = symbol_of(expression)
-            # TODO: teste a presença do símbolo no estado. Se faltar, armazene
-            # UNINITIALIZED_READ usando o span desta ocorrência, não o da
-            # declaração. Continue a visita para encontrar outras leituras.
-            raise NotImplementedError("implemente o diagnóstico de leitura")
+            # caso não houver o símbolo aqui no estado, não inicializou
+            if symbol not in state:
+                self.diagnostics.append(SemanticDiagnostic(
+                    SemanticErrorKind.UNINITIALIZED_READ,
+                    f"variável '{expression.name}' lida sem inicialização garantida",
+                    expression.span,
+                ))
+            return
         if isinstance(expression, (IntLiteral, BoolLiteral)):
             return
         if isinstance(expression, UnaryExpr):
